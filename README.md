@@ -34,7 +34,7 @@
 * **Tableau des situations** :
 
   * Colonnes : N°, Durée, Situation, Objectif, **Organisation / dispositif**, But, Critère de réalisation, Critère de réussite, Variable, Actions.
-  * **Organisation / dispositif** = **25%** de la largeur (écran **et** impression).
+  * **Organisation / dispositif** = **60%** de la largeur (écran **et** impression).
   * Les lignes impaires sont légèrement **alternées** (meilleure lisibilité).
 * **Tri des situations** : affichage **trié par N°** (croissant) → pour réorganiser, **modifiez le N°**.
 
