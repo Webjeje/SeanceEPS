@@ -1,8 +1,6 @@
 # Mode d’emploi exhaustif – Générateur de séance EPS (A4 paysage)
 
-> Objectif : produire rapidement une fiche **A4 paysage**, dense et imprimable, avec **vision globale** (entête + objectifs + tableau des situations), **stockage** des séances récurrentes (JSON) et **schéma** d’organisation (dessin carré).
-
----
+ Objectif : produire rapidement une fiche **A4 paysage**, dense et imprimable, avec **vision globale** (entête + objectifs + tableau des situations), **stockage** des séances récurrentes (JSON) et **schéma** d’organisation (dessin carré).
 
 # 1) Démarrage rapide (5 min)
 
@@ -20,7 +18,7 @@
 6. Répéter pour toutes les situations.
 7. **Imprimer** (A4 paysage) ou **Exporter JSON** pour réutiliser ultérieurement.
 
----
+
 
 # 2) Vue d’ensemble & principes de mise en page
 
@@ -40,7 +38,7 @@
   * Les lignes impaires sont légèrement **alternées** (meilleure lisibilité).
 * **Tri des situations** : affichage **trié par N°** (croissant) → pour réorganiser, **modifiez le N°**.
 
----
+
 
 # 3) Barre d’outils (haut de page)
 
@@ -51,7 +49,7 @@
 
 > Remarque : pas d’auto-sauvegarde. **Exporter** le JSON pour conserver votre travail avant de fermer la page.
 
----
+
 
 # 4) Le modal « Ajouter / Modifier une situation »
 
@@ -96,7 +94,7 @@
 * **Variables +** (complexification) : ex. + distance, − temps, + contraintes, + opposition.
 * **Variables −** (allègement) : ex. − distance, + temps, − contraintes, − opposition.
 
----
+
 
 # 5) Édition & suppression des situations
 
@@ -104,7 +102,7 @@
 * **Supprimer** (icône poubelle) : confirmation → retire la ligne.
 * **Réorganiser** : changer la valeur de **N°** (le tri est automatique à l’affichage).
 
----
+
 
 # 6) Export / Import (JSON)
 
@@ -126,7 +124,7 @@
 > * Versionnez vos fichiers : `seance-eps_2025-09-07_v1.json`.
 > * Vous pouvez constituer une **bibliothèque** de situations/séances récurrentes et ne charger que ce qu’il faut selon les classes.
 
----
+
 
 # 7) Impression (A4 paysage)
 
@@ -154,7 +152,7 @@
 * **Réemplois** : gardez une **banque** de JSON par APSA / niveau / objectifs (gain de temps énorme).
 * **Impression** : faites un **aperçu** avant d’imprimer pour vérifier la pagination.
 
----
+
 
 # 9) Limitations connues
 
@@ -163,7 +161,7 @@
 * Le module dessin est volontairement **minimal** (pas de texte, pas d’images importées).
 * La densité élevée peut nécessiter une **police un peu plus grande** si la classe lit la fiche en autonomie (à ajuster si besoin).
 
----
+
 
 # 10) Dépannage (FAQ)
 
@@ -185,7 +183,7 @@
 **Q6. Après import JSON, mes anciennes situations ont disparu.**
 → C’est normal : l’import **remplace** la séance. Exportez toujours votre travail avant d’importer un autre fichier.
 
----
+
 
 # 11) Pistes d’évolution (si besoin)
 
@@ -195,6 +193,6 @@
 * **LocalStorage** (auto-sauvegarde) + **versionning** interne.
 * **Slider de densité** (écran/impression) pour s’adapter aux usages de lecture.
 
----
 
-Besoin d’un **PDF “mode d’emploi”** prêt à imprimer (1 page recto) ou d’**infobulles** intégrées dans l’app ? Je peux te le générer à partir de ce guide.
+
+
