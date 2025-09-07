@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Générateur de séance EPS – A4 paysage</title>
+  <!-- Bootstrap 5.3 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root{
+      /* A4 paysage */
+      --paper-w: 297mm;
+      --paper-h: 210mm;
+      /* Couleurs de zones */
+      --c-bg: #0b0d10;      /* fond app */
+      --c-ink: #111213;    /* texte */
+      --c-header: #e7f1ff; /* entête (conserver) */
+      --c-attendus: #fff7cc;    /* attendus */
+      --c-obj-seq: #e9f9ee;     /* objectif séquence */
+      --c-obj-seance: #ffece6;  /* objectif séance */
+      --c-table-h: #eef2ff;     /* th situations */
+      --c-table-alt: #fafbff;   /* alternance lignes */
+      --c-border: #cfd8ea;
+      --c-accent: #0d6efd;
+      /* Modal zones */
+      --c-cadrage: #edf4ff;      /* zone 1 */
+      --c-orga: #eefaf1;         /* zone 2 */
+      --c-criteres: #fff0e8;     /* zone 3 */
+      --c-bilan: #f3e7ff;        /* zone 4 (violet) */
+      --c-bilan-border: #d9c3ff;
+    }
+
+    body{ background:var(--c-bg); }
+    .page{
+      background:#fff; width: var(--paper-w); min-height: var(--paper-h);
+      margin: 2rem auto; box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      padding: 10mm; color:var(--c-ink); position: relative;
+    }
+    .page h1{ font-size: 1.1rem; margin-bottom: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
+    .toolbar{ position: sticky; top:0; z-index: 50; backdrop-filter: blur(8px); background: rgba(11,13,16,.5); border-bottom: 1px solid rgba(255,255,255,.08); }
+    .small-label{ font-size:.85rem; color:#555; }
+    table thead th{ background:var(--c-table-h); font-weight:600; }
+    table td, table th{ vertical-align: top; }
+    .table-sm td, .table-sm th{ padding:.35rem .5rem; }
+
+    .clean-input{ width:100%; border:1px solid #e6e6e6; border-radius:.25rem; padding:.35rem .5rem; }
+    .clean-input:focus{ outline:none; border-color:#0d6efd33; box-shadow: 0 0 0 .2rem #0d6efd22; }
+    textarea.clean-input{ min-height: 56px; }
+
+    .no-break{ page-break-inside: avoid; }
+    .situations-table tr{ page-break-inside: avoid; }
+    .situations-table tbody tr:nth-child(odd){ background: var(--c-table-alt); }
+
+    /* Modal XXL */
+    .modal-xxl{ max-width: min(95vw, 1400px); }
+
+    /* Zones colorées du modal */
+    .zone{ border-color: var(--c-border)!important; }
+    .zone-cadrage{ background: var(--c-cadrage); }
+    .zone-organisation{ background: var(--c-orga); }
+    .zone-criteres{ background: var(--c-criteres); }
+
+    /* Outil actif (bouton) */
+    .tool-active{ background: var(--c-accent)!important; color:#fff!important; border-color: var(--c-accent)!important; }
+
+    /* Colonne Organisation 25% (écran + impression) */
+    #situationsTable th#thOrg, #situationsTable th:nth-child(5), #situationsTable td:nth-child(5){ width:25% !important; }
+
+    /* Print */
+    @media print{
+      @page{ size: A4 landscape; margin: 6mm; }
+      body{ background:#fff; }
+      .page{ font-size: .8rem; box-shadow:none; margin:0; width:auto; min-height:auto; padding:0; }
+      .toolbar, .btn, .actions-col, .badge-tools, .modal{ display:none !important; }
+      .clean-input{ border: none; padding: 0; }
+      .table-bordered> :not(caption)>*{ border-width: 1px; }
+      .table-bordered td, .table-bordered th{ border-color:#9aa0a6; }
+      #situationsTable th#thOrg, #situationsTable th:nth-child(5), #situationsTable td:nth-child(5){ width:25% !important; }
+    }
+  </style>
+  <style>
+    /* Style densification */
+    .page{ font-size: .9rem; line-height: 1.4; }
+    .page h1{ font-size: 1rem; margin-bottom: .4rem; }
+    .table-sm td, .table-sm th{ padding: .2rem .4rem; }
+    .clean-input{ padding: .2rem .4rem; font-size: .9rem; }
+    textarea.clean-input{ min-height: 40px; }
+    .toolbar{ padding-top: .25rem!important; padding-bottom: .25rem!important; }
+    .toolbar .badge{ font-size: .7rem; padding: .2em .5em; }
+    .row.g-3{ --bs-gutter-x: .75rem; }
+    .small-label{ font-size: .8rem; }
+  </style>
+</head>
+<body>
+  <!-- Toolbar (non imprimée) -->
+  <div class="toolbar py-2 px-3 d-print-none">
+    <div class="container-fluid d-flex gap-2 align-items-center">
+      <div class="text-white-50 me-auto small">Générateur de séance EPS · A4 paysage</div>
+      <span class="badge rounded-pill text-bg-primary">Entête</span>
+      <span class="badge rounded-pill text-bg-warning">Attendus</span>
+      <span class="badge rounded-pill text-bg-success">Obj. séquence</span>
+      <span class="badge rounded-pill text-bg-danger">Obj. séance</span>
+      <button class="btn btn-outline-light btn-sm" id="btnAddSituation"><i class="bi bi-plus-lg"></i> Ajouter une situation</button>
+      <button class="btn btn-outline-info btn-sm" id="btnExportJSON" title="Exporter JSON"><i class="bi bi-download"></i></button>
+      <button class="btn btn-outline-secondary btn-sm" id="btnImportJSON" title="Importer JSON"><i class="bi bi-upload"></i></button>
+      <input type="file" id="importFile" accept="application/json" class="d-none" />
+      <input type="file" id="situationImporter" accept="application/json" class="d-none" />
+      <button class="btn btn-primary btn-sm" onclick="window.print()"><i class="bi bi-printer"></i> Imprimer</button>
+    </div>
+  </div>
+
+  <!-- A4 page -->
+  <div class="page">
+    <!-- Ligne 1 : en-tête (conserver couleurs) -->
+    <h1>En‑tête séance</h1>
+    <div class="rounded border mb-2" style="background:var(--c-header); border-color:var(--c-border)">
+      <div class="small px-2 pt-2 text-muted">Zone entête</div>
+      <div class="table-responsive no-break px-2 pb-2">
+        <table class="table table-bordered table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th style="width:16%">APSA</th>
+              <th style="width:14%">Classe</th>
+              <th style="width:22%">Champ d’apprentissage</th>
+              <th style="width:18%">Matériel</th>
+              <th style="width:12%">Date</th>
+              <th style="width:14%">Séance n°</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <input id="apsa" class="clean-input" placeholder="APSA"/>
+              </td>
+              <td><input id="classe" class="clean-input" placeholder="ex. 5e B / 2GT1"/></td>
+              <td>
+                <select id="champ" class="clean-input">
+                  <option value="">— CA —</option>
+                  <option value="CA1">CA1 · Produire une performance optimale mesurable</option>
+                  <option value="CA2">CA2 · S’engager en sécurité et adapter son déplacement</option>
+                  <option value="CA3">CA3 · Composer et réaliser une prestation corporelle</option>
+                  <option value="CA4">CA4 · Conduire et maîtriser une confrontation</option>
+                </select>
+              </td>
+              <td><input id="materiel" class="clean-input" placeholder="Tapis, plots, chronos…"/></td>
+              <td><input id="date" type="date" class="clean-input"/></td>
+              <td><input id="seance" type="number" min="1" class="clean-input" placeholder="n°"/></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Lignes 2, 3 et 4 -->
+    <div class="row g-3 no-break">
+      <div class="col-12">
+        <div class="rounded border p-2" style="background:var(--c-attendus); border-color:#ffef99">
+          <div class="small-label mb-1">1. Attendus (fin de cycle / repères de progression)</div>
+          <textarea id="attendus" class="clean-input" placeholder="Ex. S’exprimer devant les autres par la prestation artistique et/ou acrobatique…"></textarea>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="rounded border p-2 h-100" style="background:var(--c-obj-seq); border-color:#bfeccd">
+          <div class="small-label mb-1">2. Objectif de séquence</div>
+          <textarea id="objSeq" class="clean-input" placeholder="Ex. Créer un enchaînement au sol combinant des éléments acrobatiques et artistiques…"></textarea>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="rounded border p-2 h-100" style="background:var(--c-obj-seance); border-color:#ffd1c4">
+          <div class="small-label mb-1">3. Objectif de séance</div>
+          <textarea id="objSeance" class="clean-input" placeholder="Ex. Évaluation diagnostique des acquis, instaurer un climat d’engagement…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Situations d’apprentissage -->
+    <h1 class="mt-4">Situations d’apprentissage <small class="text-muted fs-6">(Organisation / dispositif = 25% – vignette carrée)</small></h1>
+    <div class="table-responsive">
+      <table class="table table-bordered table-sm situations-table" id="situationsTable">
+        <thead>
+          <tr>
+            <th style="width:4%">N°</th>
+            <th style="width:7%">Durée</th>
+            <th style="width:18%">Situation</th>
+            <th style="width:16%">Objectif</th>
+            <th id="thOrg">Organisation / dispositif</th>
+            <th style="width:9%">But</th>
+            <th style="width:12%">Critère de réalisation</th>
+            <th style="width:12%">Critère de réussite</th>
+            <th style="width:9%">Variable</th>
+            <th class="actions-col d-print-none" style="width:5%"></th>
+          </tr>
+        </thead>
+        <tbody id="situationsBody"></tbody>
+      </table>
+      <div class="d-print-none text-end"><button class="btn btn-outline-primary btn-sm" id="btnAddSituation2"><i class="bi bi-plus-circle"></i> Ajouter une situation</button></div>
+      <div class="small text-muted mt-2">Astuce : un schéma enregistré s’imprime en vignette carrée dans « Organisation / dispositif ».</div>
+    </div>
+
+    <!-- Bilan de séance -->
+    <div class="mt-4 no-break">
+      <div class="rounded border p-2" style="background:var(--c-bilan); border-color:var(--c-bilan-border)">
+        <div class="small-label mb-1">4. Bilan de la séance</div>
+        <textarea id="bilan" class="clean-input" rows="3" placeholder="Ce qui a fonctionné, ce qui est à améliorer, comportement des élèves, pistes pour la prochaine séance…"></textarea>
+      </div>
+    </div>
+
+    <!-- Placeholders (prochaines itérations) -->
+    <div class="mt-3 no-break">
+      <div class="small text-muted">Placeholders pour futures fonctionnalités (non imprimées pour l’instant) :</div>
+      <div class="badge rounded-pill text-bg-secondary badge-tools d-print-none">Outils de dessin rapide</div>
+      <div class="badge rounded-pill text-bg-secondary badge-tools d-print-none">Ajouter photos</div>
+      <div class="badge rounded-pill text-bg-secondary badge-tools d-print-none">Importer documents externes</div>
+    </div>
+  </div>
+
+  <!-- Modal ajout / édition de situation (XXL) -->
+  <div class="modal fade" id="situationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xxl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-list-task me-2"></i><span id="modalTitle">Ajouter une situation</span></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- SECTION 1 : Items de cadrage -->
+          <div class="mb-3 zone zone-cadrage p-3 rounded border">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="badge text-bg-primary">1</span>
+              <strong>Items de cadrage</strong>
+              <span class="text-muted small">N°, Durée, Situation, Objectif, But</span>
+            </div>
+            <form id="situationForm" class="row g-3">
+              <input type="hidden" id="rowIndex" />
+              <div class="col-6 col-md-2">
+                <label class="form-label">N°</label>
+                <input type="number" id="sitNumero" class="form-control" min="1" placeholder="1" />
+              </div>
+              <div class="col-6 col-md-2">
+                <label class="form-label">Durée</label>
+                <input type="text" id="sitDuree" class="form-control" placeholder="ex. 15’" />
+              </div>
+              <div class="col-12 col-md-8">
+                <label class="form-label">Situation</label>
+                <textarea id="sitSituation" class="form-control" rows="2" placeholder="Description de la tâche / contraintes / consignes…"></textarea>
+              </div>
+              <div class="col-12 col-md-8">
+                <label class="form-label">Objectif</label>
+                <textarea id="sitObjectif" class="form-control" rows="2" placeholder="Capacité visée (technique, tactique, expressive, énergétique)…"></textarea>
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label">But (ancrage CA)</label>
+                <input type="text" id="sitBut" class="form-control" placeholder="Connaitre les attentes de l’enseignant / le cadre" />
+              </div>
+            </form>
+          </div>
+
+          <!-- SECTION 2 : Organisation & description avec dessin -->
+          <div class="mb-3 zone zone-organisation p-3 rounded border">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="badge text-bg-success">2</span>
+              <strong>Organisation & description</strong>
+              <span class="text-muted small">Texte + schéma (trait, carré, cercle, point) – canvas carré</span>
+            </div>
+            <div class="row g-3">
+              <div class="col-12 col-lg-4">
+                <label class="form-label">Organisation / dispositif (texte)</label>
+                <textarea id="sitOrganisation" class="form-control" rows="8" placeholder="Groupes, rotations, atelier, matériel, traçage…"></textarea>
+              </div>
+              <div class="col-12 col-lg-8">
+                <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                  <div class="btn-group btn-group-sm" role="group" aria-label="Outils dessin">
+                    <button type="button" class="btn btn-outline-secondary" id="toolSelect" title="Sélectionner/modifier"><i class="bi bi-cursor"></i></button>
+                    <button type="button" class="btn btn-outline-secondary" id="toolLine" title="Trait"><i class="bi bi-slash-lg"></i></button>
+                    <button type="button" class="btn btn-outline-secondary" id="toolRect" title="Carré/rectangle"><i class="bi bi-square"></i></button>
+                    <button type="button" class="btn btn-outline-secondary" id="toolCircle" title="Cercle"><i class="bi bi-circle"></i></button>
+                    <button type="button" class="btn btn-outline-secondary" id="toolPoint" title="Point"><i class="bi bi-record2"></i></button>
+                  </div>
+                  <div class="btn-group btn-group-sm ms-2" role="group">
+                    <button type="button" class="btn btn-outline-secondary" id="toolUndo" title="Annuler le dernier objet"><i class="bi bi-arrow-counterclockwise"></i></button>
+                    <button type="button" class="btn btn-outline-secondary" id="toolClear" title="Effacer tout"><i class="bi bi-x-circle"></i></button>
+                    <button type="button" class="btn btn-outline-secondary" id="fitCanvas" title="Adapter à la zone"><i class="bi bi-aspect-ratio"></i></button>
+                  </div>
+                  <button type="button" class="btn btn-outline-secondary btn-sm ms-2" id="toolAddImage" title="Importer une image"><i class="bi bi-image"></i></button>
+                  <input type="file" id="imageImporter" accept="image/*" class="d-none" />
+                  <div class="ms-2 d-flex align-items-center gap-2">
+                    <label for="strokeColor" class="small text-muted mb-0">Couleur</label>
+                    <input type="color" id="strokeColor" value="#111111" class="form-control form-control-color form-control-sm" title="Couleur des tracés"/>
+                  </div>
+                  <span class="text-muted small ms-auto">Surface carrée • Dessin &amp; sélection</span>
+                </div>
+                <div class="border rounded position-relative bg-white">
+                  <canvas id="orgCanvas" width="800" height="800" style="width:100%; height:auto; display:block;"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 3 : Retour / critères / variables -->
+          <div class="mb-1 zone zone-criteres p-3 rounded border">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="badge text-bg-warning">3</span>
+              <strong>Retour : critères & variables</strong>
+              <span class="text-muted small">Critère de réalisation, Critère de réussite, Variables +/−</span>
+            </div>
+            <div class="row g-3">
+              <div class="col-12 col-md-4">
+                <label class="form-label">Critère de réalisation</label>
+                <textarea id="sitCritReal" class="form-control" rows="3" placeholder="Qualité d’exécution attendue (alignements, rythme, enchaînement…)"></textarea>
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label">Critère de réussite</label>
+                <textarea id="sitCritReussite" class="form-control" rows="3" placeholder="Seuils / indicateurs de réussite (ex. 3/5, 20’’ sans faute…)"></textarea>
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label">Variables (général)</label>
+                <textarea id="sitVariable" class="form-control" rows="3" placeholder="Distances, temps, nombre de joueurs, surface, règles…"></textarea>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label">Variables + (complexe)</label>
+                <textarea id="sitVariablePlus" class="form-control" rows="2" placeholder="Ex. + distance, − temps, + contraintes, + opposition…"></textarea>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label">Variables − (simplifié)</label>
+                <textarea id="sitVariableMoins" class="form-control" rows="2" placeholder="Ex. − distance, + temps, − contraintes, − opposition…"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+          <button class="btn btn-primary" id="saveSituation"><i class="bi bi-check2"></i> Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+  <script>
+    const situations = [];
+    let orgFabric = null;     // Canvas Fabric
+    let currentTool = 'line'; // Outil par défaut
+    let drawingObj = null;    // Objet en cours de tracé
+    let startPt = null;       // {x,y} départ
+    let currentColor = '#111111';
+
+    const tbody = document.getElementById('situationsBody');
+    const modalEl = document.getElementById('situationModal');
+    const modal = new bootstrap.Modal(modalEl);
+
+    function renderTable(){
+      tbody.innerHTML = '';
+      const sorted = [...situations].sort((a,b)=> (a.numero||0) - (b.numero||0));
+      sorted.forEach((s)=>{
+        const tr = document.createElement('tr');
+        const orgCell = `${escapeHTML(s.organisation||'')}` + (s.drawingDataUrl? `<div class='mt-1 ratio ratio-1x1' style='max-width:100%;'><img src='${s.drawingDataUrl}' alt='schéma' style='width:100%; height:100%; object-fit:contain; aspect-ratio:1/1;'></div>`:'');
+        tr.innerHTML = `
+          <td>${s.numero||''}</td>
+          <td>${s.duree||''}</td>
+          <td>${escapeHTML(s.situation||'')}</td>
+          <td>${escapeHTML(s.objectif||'')}</td>
+          <td>${orgCell}</td>
+          <td>${escapeHTML(s.but||'')}</td>
+          <td>${escapeHTML(s.critReal||'')}</td>
+          <td>${escapeHTML(s.critReussite||'')}</td>
+          <td>${escapeHTML(s.variable||'')}
+${(s.variablePlus||s.variableMoins)? `<div class='small text-muted'>+ ${escapeHTML(s.variablePlus||'')}<br>− ${escapeHTML(s.variableMoins||'')}</div>`:''}</td>
+          <td class="actions-col text-nowrap d-print-none">
+            <div class="d-flex flex-wrap gap-1">
+              <button class="btn btn-sm btn-outline-secondary" title="Modifier" onclick="editRow(${s._id})"><i class="bi bi-pencil"></i></button>
+              <button class="btn btn-sm btn-outline-danger" title="Supprimer" onclick="deleteRow(${s._id})"><i class="bi bi-trash"></i></button>
+              <button class="btn btn-sm btn-outline-info" title="Exporter la situation" onclick="exportSituation(${s._id})"><i class="bi bi-box-arrow-down"></i></button>
+              <button class="btn btn-sm btn-outline-success" title="Importer et remplacer" onclick="triggerSituationImport(${s._id})"><i class="bi bi-box-arrow-up"></i></button>
+            </div>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function resetForm(){
+      ['rowIndex','sitNumero','sitDuree','sitSituation','sitObjectif','sitOrganisation','sitBut','sitCritReal','sitCritReussite','sitVariable','sitVariablePlus','sitVariableMoins'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+      if(orgFabric){ clearFabric(); }
+      setActiveTool('line');
+    }
+
+    function openAdd(){ resetForm(); initFabricIfNeeded(); resizeFabricToContainer(); document.getElementById('modalTitle').textContent = 'Ajouter une situation'; modal.show(); }
+
+    function openEdit(obj){
+      document.getElementById('modalTitle').textContent = 'Modifier la situation';
+      document.getElementById('rowIndex').value = obj._id;
+      document.getElementById('sitNumero').value = obj.numero || '';
+      document.getElementById('sitDuree').value = obj.duree || '';
+      document.getElementById('sitSituation').value = obj.situation || '';
+      document.getElementById('sitObjectif').value = obj.objectif || '';
+      document.getElementById('sitOrganisation').value = obj.organisation || '';
+      document.getElementById('sitBut').value = obj.but || '';
+      document.getElementById('sitCritReal').value = obj.critReal || '';
+      document.getElementById('sitCritReussite').value = obj.critReussite || '';
+      document.getElementById('sitVariable').value = obj.variable || '';
+      document.getElementById('sitVariablePlus').value = obj.variablePlus || '';
+      document.getElementById('sitVariableMoins').value = obj.variableMoins || '';
+      initFabricIfNeeded(); clearFabric();
+      if(obj.drawingJSON){ orgFabric.loadFromJSON(obj.drawingJSON, orgFabric.renderAll.bind(orgFabric)); }
+      resizeFabricToContainer();
+      modal.show();
+    }
+
+    function saveFromModal(){
+      const id = document.getElementById('rowIndex').value;
+      const drawingJSON = orgFabric ? JSON.stringify(orgFabric.toJSON()) : '';
+      const hasObjects = orgFabric && orgFabric.getObjects().length>0;
+      const drawingDataUrl = hasObjects ? orgFabric.toDataURL({ format:'png', multiplier:1 }) : '';
+      const obj = {
+        _id: id? Number(id) : Date.now(),
+        numero: Number(document.getElementById('sitNumero').value)||'',
+        duree: document.getElementById('sitDuree').value.trim(),
+        situation: document.getElementById('sitSituation').value.trim(),
+        objectif: document.getElementById('sitObjectif').value.trim(),
+        organisation: document.getElementById('sitOrganisation').value.trim(),
+        but: document.getElementById('sitBut').value,
+        critReal: document.getElementById('sitCritReal').value.trim(),
+        critReussite: document.getElementById('sitCritReussite').value.trim(),
+        variable: document.getElementById('sitVariable').value.trim(),
+        variablePlus: document.getElementById('sitVariablePlus').value.trim(),
+        variableMoins: document.getElementById('sitVariableMoins').value.trim(),
+        drawingJSON, drawingDataUrl,
+      };
+      const idx = situations.findIndex(x=> x._id === obj._id);
+      if(idx>=0){ situations[idx] = obj; } else { situations.push(obj); }
+      modal.hide(); renderTable();
+    }
+
+    function editRow(id){ const obj = situations.find(x=>x._id===id); if(obj) openEdit(obj); }
+    function deleteRow(id){ if(confirm('Supprimer cette situation ?')){ const i = situations.findIndex(x=>x._id===id); if(i>=0){ situations.splice(i,1); renderTable(); } } }
+
+    function escapeHTML(str){ return String(str).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
+
+    function exportSituation(id){
+      const situation = situations.find(s => s._id === id);
+      if(!situation) return;
+      // Create a deep copy and remove the internal _id before exporting
+      const situationToExport = JSON.parse(JSON.stringify(situation));
+      delete situationToExport._id;
+
+      const blob = new Blob([JSON.stringify(situationToExport, null, 2)], {type:'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `situation-eps-${situation.numero || 'sans-numero'}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    // Export / Import JSON
+    function exportJSON(){
+      const data = { entete: { apsa: apsa.value, classe: classe.value, champ: champ.value, materiel: materiel.value, date: date.value, seance: seance.value, attendus: attendus.value, objectifSequence: objSeq.value, objectifSeance: objSeance.value, bilan: bilan.value }, situations };
+      const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'seance-eps.json'; document.body.appendChild(a); a.click(); a.remove();
+    }
+    function importJSONFile(file){
+      const reader = new FileReader(); reader.onload = (e)=>{ try{ const data = JSON.parse(e.target.result||'{}'); if(data.entete){ apsa.value=data.entete.apsa||''; classe.value=data.entete.classe||''; champ.value=data.entete.champ||''; materiel.value=data.entete.materiel||''; date.value=data.entete.date||''; seance.value=data.entete.seance||''; attendus.value=data.entete.attendus||''; objSeq.value=data.entete.objectifSequence||''; objSeance.value=data.entete.objectifSeance||''; bilan.value=data.entete.bilan||''; } if(Array.isArray(data.situations)){ situations.splice(0, situations.length, ...data.situations.map(s=>({ ...s, _id: s._id || Date.now()+Math.random() }))); } renderTable(); }catch(err){ alert('Fichier invalide.'); } }; reader.readAsText(file);
+    }
+
+    let targetSituationIdForImport = null;
+    const situationImporter = document.getElementById('situationImporter');
+
+    function triggerSituationImport(id) {
+      targetSituationIdForImport = id;
+      situationImporter.click();
+    }
+
+    situationImporter.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file || targetSituationIdForImport === null) {
+        e.target.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          const importedSituation = JSON.parse(evt.target.result || '{}');
+          const targetIndex = situations.findIndex(s => s._id === targetSituationIdForImport);
+
+          if (targetIndex !== -1) {
+            // Preserve the original _id, replace everything else
+            const originalId = situations[targetIndex]._id;
+            situations[targetIndex] = { ...importedSituation, _id: originalId };
+            renderTable();
+          }
+        } catch (err) {
+          alert('Fichier de situation invalide.');
+        } finally {
+          // Reset for next import
+          targetSituationIdForImport = null;
+          e.target.value = '';
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    // Events barre
+    document.getElementById('btnAddSituation').addEventListener('click', openAdd);
+    document.getElementById('btnAddSituation2').addEventListener('click', openAdd);
+    document.getElementById('saveSituation').addEventListener('click', saveFromModal);
+    document.getElementById('btnExportJSON').addEventListener('click', exportJSON);
+    document.getElementById('btnImportJSON').addEventListener('click', ()=> importFile.click());
+    document.getElementById('importFile').addEventListener('change', (e)=>{ if(e.target.files[0]) importJSONFile(e.target.files[0]); });
+
+    /* ==========================
+       Dessin – Fabric.js (select mode enabled)
+    ========================== */
+    function setActiveTool(tool){
+      currentTool = tool;
+      const isSelectMode = tool === 'select';
+      if(orgFabric){
+        orgFabric.isDrawingMode = false; // Turn off free drawing
+        orgFabric.selection = isSelectMode;
+        orgFabric.defaultCursor = isSelectMode ? 'default' : 'crosshair';
+        // Allow clicking through objects when drawing
+        orgFabric.forEachObject(o => { o.evented = isSelectMode; });
+      }
+      ['toolSelect','toolLine','toolRect','toolCircle','toolPoint'].forEach(id=>{
+        const b = document.getElementById(id);
+        if(!b) return;
+        const toolName = id.replace('tool','').toLowerCase();
+        if(toolName === tool) b.classList.add('tool-active');
+        else b.classList.remove('tool-active');
+      });
+    }
+
+    function initFabricIfNeeded(){
+      if(orgFabric) return;
+      orgFabric = new fabric.Canvas('orgCanvas', { selection: true, defaultCursor: 'default' });
+      orgFabric.on('mouse:down', onMouseDown);
+      orgFabric.on('mouse:move', onMouseMove);
+      orgFabric.on('mouse:up', onMouseUp);
+
+      // Outils
+      document.getElementById('toolSelect').onclick = ()=> setActiveTool('select');
+      document.getElementById('toolLine').onclick  = ()=> setActiveTool('line');
+      document.getElementById('toolRect').onclick  = ()=> setActiveTool('rect');
+      document.getElementById('toolCircle').onclick= ()=> setActiveTool('circle');
+      document.getElementById('toolPoint').onclick = ()=> setActiveTool('point');
+      document.getElementById('toolUndo').onclick  = undoLast;
+      document.getElementById('toolClear').onclick = clearFabric;
+      document.getElementById('fitCanvas').onclick = resizeFabricToContainer;
+      document.getElementById('strokeColor').addEventListener('input', (e)=>{ currentColor = e.target.value; });
+
+      // Image import
+      document.getElementById('toolAddImage').onclick = ()=> document.getElementById('imageImporter').click();
+      document.getElementById('imageImporter').addEventListener('change', (e)=>{
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (f) => {
+          fabric.Image.fromURL(f.target.result, (img) => {
+            if(!orgFabric) return;
+            img.scaleToWidth(orgFabric.width / 2); // Scale to half canvas width
+            orgFabric.add(img);
+            orgFabric.centerObject(img);
+            img.setCoords();
+            setActiveTool('select');
+          });
+        };
+        reader.readAsDataURL(file);
+        e.target.value = ''; // Reset input to allow same file import again
+      });
+
+      window.addEventListener('resize', resizeFabricToContainer);
+      modalEl.addEventListener('shown.bs.modal', resizeFabricToContainer);
+      setActiveTool('select'); // Start in select mode
+      resizeFabricToContainer();
+    }
+
+    function resizeFabricToContainer(){
+      const c = document.getElementById('orgCanvas');
+      const parent = c.parentElement; if(!parent || !orgFabric) return;
+      const w = parent.clientWidth - 2; // largeur dispo
+      const size = Math.min(w, 800);    // carré max
+      orgFabric.setWidth(size); orgFabric.setHeight(size); orgFabric.calcOffset(); orgFabric.requestRenderAll();
+    }
+
+    function clearFabric(){ if(orgFabric){ orgFabric.clear(); orgFabric.requestRenderAll(); } }
+    function undoLast(){
+      if(!orgFabric) return;
+      const objs = orgFabric.getObjects();
+      if(objs.length){
+        orgFabric.remove(objs[objs.length-1]);
+        orgFabric.requestRenderAll();
+      }
+    }
+
+    function onMouseDown(opt){
+      if(currentTool === 'select' || !orgFabric) return;
+      startPt = orgFabric.getPointer(opt.e);
+      const settings = { stroke: currentColor, strokeWidth: 2, strokeUniform: true, selectable: false, evented: false };
+      if(currentTool==='line'){
+        drawingObj = new fabric.Line([startPt.x, startPt.y, startPt.x, startPt.y], settings);
+      } else if(currentTool==='rect'){
+        drawingObj = new fabric.Rect({ left: startPt.x, top: startPt.y, width: 0, height: 0, fill:'rgba(0,0,0,0)', ...settings });
+      } else if(currentTool==='circle'){
+        drawingObj = new fabric.Circle({ left: startPt.x, top: startPt.y, radius: 0, fill:'rgba(0,0,0,0)', originX:'left', originY:'top', ...settings });
+      } else if(currentTool==='point'){
+        drawingObj = new fabric.Circle({ left: startPt.x, top: startPt.y, radius: 4, fill: currentColor, stroke: currentColor, originX:'center', originY:'center', ...settings });
+      }
+      if(drawingObj){ orgFabric.add(drawingObj); }
+    }
+
+    function onMouseMove(opt){
+      if(!drawingObj || currentTool === 'select' || !orgFabric) return;
+      const p = orgFabric.getPointer(opt.e);
+      if(drawingObj.type==='line'){
+        drawingObj.set({ x2:p.x, y2:p.y });
+      } else if(drawingObj.type==='rect'){
+        const w = Math.abs(p.x - startPt.x);
+        const h = Math.abs(p.y - startPt.y);
+        drawingObj.set({ width: w, height: h, left: Math.min(p.x, startPt.x), top: Math.min(p.y, startPt.y) });
+      } else if(drawingObj.type==='circle'){
+        const r = Math.sqrt(Math.pow(p.x - startPt.x, 2) + Math.pow(p.y - startPt.y, 2));
+        drawingObj.set({ radius: r });
+      }
+      orgFabric.requestRenderAll();
+    }
+
+    function onMouseUp(opt){
+      if(!drawingObj || currentTool === 'select' || !orgFabric) return;
+      // For points, no need to do anything special on mouse up
+      if(drawingObj.type !== 'point'){
+        drawingObj.setCoords(); // Recalculate controls
+      }
+      drawingObj.set({ selectable: true, evented: true });
+      drawingObj = null;
+      startPt = null;
+      setActiveTool('select');
+    }
+
+    // Seed exemple
+    situations.push({
+      _id: Date.now(), numero: 1, duree: '15’',
+      situation: 'Échauffement collectif structuré (phase cardio, articulaire, musculaire).',
+      objectif: 'Préparer l’organisme et rappeler la routine d’échauffement.',
+      organisation: 'Par 2, espace balisé, rotation toutes les 3’ sur ateliers.',
+      but: 'CA1 · Produire une performance',
+      critReal: 'Montée progressive de l’intensité, postures gainées, alignements.',
+      critReussite: 'Routine complète réalisée sans pause non prévue.',
+      variable: 'Durée des ateliers, densité de tâches, temps de récupération.',
+      variablePlus: 'Augmenter le nombre d\'ateliers, réduire les récupérations.',
+      variableMoins: 'Diminuer le nombre d\'ateliers, augmenter les récupérations.'
+    });
+    renderTable();
+  </script>
+</body>
+</html>
