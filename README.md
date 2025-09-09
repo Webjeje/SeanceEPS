@@ -163,9 +163,20 @@
 
 * **Pas de sauvegarde automatique** (pas de LocalStorage) : fermeture/rafraîchissement = **perte** si vous n’avez pas exporté le JSON.
 * L’import **remplace** la séance chargée (pas de fusion).
-* Le module dessin est volontairement **minimal** (pas de texte, pas d’images importées).
+* Le module dessin est volontairement **minimal** (sauf à partir d’images importées).
 * La densité élevée peut nécessiter une **police un peu plus grande** si la classe lit la fiche en autonomie (à ajuster si besoin).
 
+changer les em à l'impression dans les css pour grossir ou diminuer la taille des polices.
+ @media print{
+      @page{ size: A4 landscape; margin: 6mm; }
+      body{ background:#fff; }
+      .page{ font-size: .8rem; box-shadow:none; margin:0; width:auto; min-height:auto; padding:0; }
+      .toolbar, .btn, .actions-col, .badge-tools, .modal{ display:none !important; }
+      .clean-input{ border: none; padding: 0; }
+      .table-bordered> :not(caption)>*{ border-width: 1px; }
+      .table-bordered td, .table-bordered th{ border-color:#9aa0a6; }
+      #situationsTable th#thOrg, #situationsTable th:nth-child(5), #situationsTable td:nth-child(5){ width:60% !important; }
+    }
 
 
 # 10) Dépannage (FAQ)
