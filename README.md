@@ -50,7 +50,9 @@
 
 > Remarque : pas d’auto-sauvegarde. **Exporter** le JSON pour conserver votre travail avant de fermer la page.
 
+[![Watch the video](https://img.youtube.com/vi/af7hSFUDhdU/maxresdefault.jpg)](https://youtu.be/af7hSFUDhdU)
 
+### [Lien Vidéo](https://youtu.be/af7hSFUDhdU)
 
 # 4) Le modal « Ajouter / Modifier une situation »
 
