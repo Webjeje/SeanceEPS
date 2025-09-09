@@ -1,7 +1,7 @@
 # Mode d’emploi exhaustif – Générateur de séance EPS (A4 paysage)
 
  Objectif : produire rapidement une fiche **A4 paysage**, dense et imprimable, avec **vision globale** (entête + objectifs + tableau des situations), **stockage** des séances récurrentes (JSON) et **schéma** d’organisation (dessin carré).
-
+(https://www.youtube.com/watch?v=zfMgg_ozHO4)
 # 1) Démarrage rapide (5 min)
 
 1. Ouvrir la page et compléter l’**entête** (APSA, Classe, Champ d’apprentissage, Matériel, Date, Séance n°).
