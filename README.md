@@ -169,13 +169,21 @@
 changer les em à l'impression dans les css pour grossir ou diminuer la taille des polices.
  @media print{
       @page{ size: A4 landscape; margin: 6mm; }
+
       body{ background:#fff; }
+
       .page{ font-size: .8rem; box-shadow:none; margin:0; width:auto; min-height:auto; padding:0; }
+
       .toolbar, .btn, .actions-col, .badge-tools, .modal{ display:none !important; }
+      
       .clean-input{ border: none; padding: 0; }
+      
       .table-bordered> :not(caption)>*{ border-width: 1px; }
+      
       .table-bordered td, .table-bordered th{ border-color:#9aa0a6; }
+      
       #situationsTable th#thOrg, #situationsTable th:nth-child(5), #situationsTable td:nth-child(5){ width:60% !important; }
+      
     }
 
 
