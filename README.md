@@ -1,7 +1,11 @@
 # Mode d’emploi exhaustif – Générateur de séance EPS (A4 paysage)
 
  Objectif : produire rapidement une fiche **A4 paysage**, dense et imprimable, avec **vision globale** (entête + objectifs + tableau des situations), **stockage** des séances récurrentes (JSON) et **schéma** d’organisation (dessin carré).
-![Watch the video](https://www.webjeje.com/online/assets/seance.png)
+
+[![Watch the video](https://img.youtube.com/vi/af7hSFUDhdU/maxresdefault.jpg)](https://youtu.be/af7hSFUDhdU)
+
+### [Lien Vidéo](https://youtu.be/af7hSFUDhdU)
+
 
 # 1) Démarrage rapide (5 min)
 
@@ -50,9 +54,7 @@
 
 > Remarque : pas d’auto-sauvegarde. **Exporter** le JSON pour conserver votre travail avant de fermer la page.
 
-[![Watch the video](https://img.youtube.com/vi/af7hSFUDhdU/maxresdefault.jpg)](https://youtu.be/af7hSFUDhdU)
 
-### [Lien Vidéo](https://youtu.be/af7hSFUDhdU)
 
 # 4) Le modal « Ajouter / Modifier une situation »
 
@@ -127,7 +129,7 @@
 > * Versionnez vos fichiers : `seance-eps_2025-09-07_v1.json`.
 > * Vous pouvez constituer une **bibliothèque** de situations/séances récurrentes et ne charger que ce qu’il faut selon les classes.
 
-
+![Watch the video](https://www.webjeje.com/online/assets/seance.png)
 
 # 7) Impression (A4 paysage)
 
