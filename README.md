@@ -4,7 +4,7 @@
 
 [![Watch the video](https://img.youtube.com/vi/af7hSFUDhdU/maxresdefault.jpg)](https://youtu.be/af7hSFUDhdU)
 
-### [Lien Vidéo](https://youtu.be/af7hSFUDhdU)
+v
 
 
 # 1) Démarrage rapide (5 min)
@@ -120,7 +120,8 @@
   * **situations** : champs texte + **drawingJSON** (objets Fabric pour ré-édition) + **drawingDataUrl** (PNG vignette pour l’impression).
 
 ## Import
-
+### [Démo en Rugby:15 situations à importer ](https://www.webjeje.com/online/webapp/seance/rugby-situations-pack.zip)
+https://www.webjeje.com/online/webapp/seance/rugby-situations-pack.zip
 * Clique **Importer JSON** → choisir un fichier `.json`.
 * Le contenu **remplace** la séance en cours (pensez à exporter avant si nécessaire).
 
