@@ -120,8 +120,9 @@ v
   * **situations** : champs texte + **drawingJSON** (objets Fabric pour ré-édition) + **drawingDataUrl** (PNG vignette pour l’impression).
 
 ## Import
-### [Démo en Rugby:15 situations à importer ](https://www.webjeje.com/online/webapp/seance/rugby-situations-pack.zip)
-https://www.webjeje.com/online/webapp/seance/rugby-situations-pack.zip
+### [Démo en Rugby: 15 situations à importer ](https://www.webjeje.com/online/webapp/seance/rugby-situations-pack.zip)
+Extraire le zip > Ajouter une situation (laisser vide) > Enregistrer > Importer > choisir la situation de rugby à importer
+
 * Clique **Importer JSON** → choisir un fichier `.json`.
 * Le contenu **remplace** la séance en cours (pensez à exporter avant si nécessaire).
 
