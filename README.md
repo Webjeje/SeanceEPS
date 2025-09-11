@@ -4,7 +4,7 @@
 
 [![Watch the video](https://img.youtube.com/vi/af7hSFUDhdU/maxresdefault.jpg)](https://youtu.be/af7hSFUDhdU)
 
-v
+
 
 
 # 1) Démarrage rapide (5 min)
